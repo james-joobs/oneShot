@@ -1,0 +1,101 @@
+{
+  "dynamic": {
+    "conversion": {
+      "quantization_type": "dynamic",
+      "model_size_bytes": 3773864,
+      "model_size_mb": 3.5990371704101562,
+      "output_path": "tflite_models/similarity_model_dynamic.tflite"
+    },
+    "verification": {
+      "input_shape": [
+        1,
+        224,
+        224,
+        3
+      ],
+      "output_shape": [
+        1,
+        512
+      ],
+      "input_dtype": "<class 'numpy.float32'>",
+      "output_dtype": "<class 'numpy.float32'>",
+      "embedding_norm": 1.0,
+      "model_working": true
+    },
+    "benchmark": {
+      "average_inference_time_ms": 6.382393836975098,
+      "min_inference_time_ms": 6.23011589050293,
+      "max_inference_time_ms": 6.8359375,
+      "num_runs": 10,
+      "all_times_ms": [
+        6.479978561401367,
+        6.299018859863281,
+        6.246089935302734,
+        6.285905838012695,
+        6.374120712280273,
+        6.8359375,
+        6.259918212890625,
+        6.23011589050293,
+        6.494998931884766,
+        6.317853927612305
+      ]
+    }
+  },
+  "float16": {
+    "conversion": {
+      "quantization_type": "float16",
+      "model_size_bytes": 6969088,
+      "model_size_mb": 6.646240234375,
+      "output_path": "tflite_models/similarity_model_float16.tflite"
+    },
+    "verification": {
+      "input_shape": [
+        1,
+        224,
+        224,
+        3
+      ],
+      "output_shape": [
+        1,
+        512
+      ],
+      "input_dtype": "<class 'numpy.float32'>",
+      "output_dtype": "<class 'numpy.float32'>",
+      "embedding_norm": 1.0,
+      "model_working": true
+    },
+    "benchmark": {
+      "average_inference_time_ms": 7.495927810668945,
+      "min_inference_time_ms": 7.308721542358398,
+      "max_inference_time_ms": 8.085012435913086,
+      "num_runs": 10,
+      "all_times_ms": [
+        7.750034332275391,
+        7.401943206787109,
+        7.449865341186523,
+        7.421970367431641,
+        7.425069808959961,
+        8.085012435913086,
+        7.318973541259766,
+        7.473945617675781,
+        7.323741912841797,
+        7.308721542358398
+      ]
+    }
+  },
+  "int8": {
+    "conversion": {
+      "quantization_type": "int8",
+      "model_size_bytes": 3983488,
+      "model_size_mb": 3.7989501953125,
+      "output_path": "tflite_models/similarity_model_int8.tflite"
+    },
+    "verification": {
+      "error": "failed to create XNNPACK runtimeNode number 124 (TfLiteXNNPackDelegate) failed to prepare.",
+      "model_working": false
+    },
+    "benchmark": {
+      "error": "Failed to initialize interpreter with any configuration"
+    }
+  }
+}
