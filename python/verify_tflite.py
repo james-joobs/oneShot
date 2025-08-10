@@ -24,10 +24,27 @@ def main() -> None:
     print("Input:", in_det)
     print("Output:", out_det)
 
-    # Create a dummy image (ImageNet normalized) 1x224x224x3
-    h, w = (in_det['shape'][1], in_det['shape'][2]) if len(in_det['shape']) == 4 else (224, 224)
-    x = np.random.rand(1, h, w, 3).astype(np.float32)
-    # If your graph expects ImageNet normalization applied upstream, adapt here.
+    # Create a dummy image based on input shape
+    input_shape = in_det['shape']
+    print(f"Model expects input shape: {input_shape}")
+    
+    # Check if input is NCHW or NHWC format
+    if len(input_shape) == 4:
+        if input_shape[1] == 3:  # NCHW format [batch, channels, height, width]
+            channels, h, w = input_shape[1], input_shape[2], input_shape[3]
+            x = np.random.rand(1, channels, h, w).astype(np.float32)
+            print(f"Generated NCHW input: {x.shape}")
+        else:  # NHWC format [batch, height, width, channels]
+            h, w, channels = input_shape[1], input_shape[2], input_shape[3]
+            x = np.random.rand(1, h, w, channels).astype(np.float32)
+            print(f"Generated NHWC input: {x.shape}")
+    else:
+        # Fallback for other shapes
+        x = np.random.rand(*input_shape).astype(np.float32)
+        print(f"Generated input with shape: {x.shape}")
+    
+    # Apply ImageNet normalization (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    x = (x - 0.5) * 2.0  # Normalize to [-1, 1] range
     interpreter.set_tensor(in_det['index'], x)
     interpreter.invoke()
     y = interpreter.get_tensor(out_det['index'])

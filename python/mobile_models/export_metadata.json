@@ -1,0 +1,14 @@
+{
+  "checkpoint_path": "checkpoints/checkpoint_epoch_20.pth",
+  "export_date": "1754796739.651708",
+  "formats": [
+    "float32",
+    "float16",
+    "dynamic"
+  ],
+  "model_paths": {
+    "float32": "mobile_models/model_float32.tflite",
+    "float16": "mobile_models/model_float16.tflite",
+    "dynamic": "mobile_models/model_dynamic.tflite"
+  }
+}

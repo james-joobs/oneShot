@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "created_at": "2025-08-10T14:10:54.948517",
+    "version": "1.0",
+    "component": "project_test_project"
+  },
+  "config": {
+    "name": "test_project",
+    "image_dir": "../data",
+    "mode": "quick",
+    "created_at": "unknown"
+  }
+}

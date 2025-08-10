@@ -1,0 +1,7 @@
+{
+  "n_components": 23,
+  "whiten": true,
+  "variance_threshold": 0.95,
+  "input_dim": 384,
+  "variance_retained": 0.9509539008140564
+}
