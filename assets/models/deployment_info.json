@@ -1,5 +1,5 @@
 {
-  "deployed_at": "2025-08-10T14:47:46.782124",
+  "deployed_at": "2025-08-10T14:50:34.420077",
   "source_model": {
     "name": "New Float32 Model",
     "path": "mobile_models/model_float32.tflite",
