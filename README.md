@@ -1,24 +1,22 @@
 # oneShot: Flutter 기반 온디바이스 여행 사진 큐레이션 앱
 
-여행 사진 중복을 자동으로 묶고(클러스터링), 각 그룹에서 가장 좋은 사진을 추천하는 온디바이스 AI 앱입니다. 본 저장소는 Flutter 앱을 리포지터리 루트에서 직접 빌드/실행할 수 있도록 구성되어 있습니다.
+여행 사진 중복을 자동으로 묶고(클러스터링), 각 그룹에서 가장 좋은 사진을 추천하는 온디바이스 AI 앱입니다. 본 저장소는 Flutter 앱을 루트에서 바로 빌드/실행할 수 있도록 구성되어 있습니다.
 
-## 최근 작업 요약 (Android 중심)
+## 현재 상황(2025-08)
 
-- 실서비스 파이프라인 전환: 모의 임베딩 → 실제 TFLite 추론으로 전환
-  - `lib/engine/tflite_embedding_runner.dart` 추가 (실제 TFLite 임베딩 러너)
-  - `lib/providers/photo_processing_provider.dart`에서 `TFLiteService` + `TFLiteEmbeddingRunner` 사용
-- 중복 그룹핑 및 랭킹 엔진 통합 유지
-  - 그룹핑: `lib/engine/grouping.dart` (배경/얼굴 시그니처 융합 점수)
-  - 랭킹: `lib/engine/ranking.dart` + `lib/engine/quality_metrics.dart`
-- Android 빌드 체인 정비
-  - 디버그/릴리스 APK 모두 빌드 완료
-  - 릴리스 축소(난독화/리소스 축소) 재활성화 및 안전 규칙 추가
-    - ProGuard: `android/app/proguard-rules.pro` (TFLite/Flutter/Play Core 보존 규칙)
-    - Gradle: `android/app/build.gradle.kts` 릴리스 빌드에 축소 설정 적용
-
-빌드 결과
-- 디버그 APK: `build/app/outputs/flutter-apk/app-debug.apk`
-- 릴리스 APK(축소 ON): `build/app/outputs/flutter-apk/app-release.apk`
+- DINOv2 ViT-S/14 임베딩 TFLite 모델 연동 완료
+  - 모델: `assets/models/dinov2_vits14_embed.tflite` (동적 버전도 포함)
+  - 입력 텐서 4D(NHWC) 처리 및 동적 입력 크기 리사이즈 로직 반영
+- 사진 분석 실행 시 발생하던 Conv2D 입력 차원 오류를 해결
+  - 오류 메시지 예: `input->dims->size != 4 (1 != 4)` / `Node 0 (CONV_2D) failed to prepare`
+  - 원인: 4D 입력이 아닌 1D 텐서로 전달되던 버그
+  - 조치: `TFLiteService`에서 실제 4D NHWC 입력 생성 및 출력 Flatten 처리로 수정
+- .gitignore 정리
+  - 사용자 사진은 `data/**`를 통째로 무시하고, 디렉터리 유지를 위해 `data/.gitkeep`만 추적
+  - 모델 바이너리는 기본적으로 `*.tflite` 무시하되, 앱이 사용하는 `assets/models/*.tflite`와
+    도구용 `python/tflite_models/*.tflite`는 추적 유지
+- 실패 시 모의 엔진으로 폴백
+  - 실제 모델 초기화 실패 시 `MockTFLiteService` 기반 임베딩으로 폴백되어 UI 확인 가능
 
 ## 앱 아키텍처 개요
 
@@ -50,8 +48,11 @@ lib/
 ```
 
 에셋/모델
-- 앱에 번들된 예제 이미지: `data/` (pubspec 등록)
-- TFLite 모델: `assets/models/similarity_model_dynamic.tflite`
+- 번들 예제 이미지: `data/` (대용량 개인 사진은 커밋하지 않음)
+- TFLite 임베딩 모델:
+  - `assets/models/dinov2_vits14_embed.tflite`
+  - `assets/models/dinov2_vits14_embed_dynamic.tflite`
+  - 참고용 유사도 모델(실험): `assets/models/similarity_model_dynamic.tflite`
 
 ## 동작 흐름
 
@@ -64,20 +65,19 @@ lib/
    - Clusters: 중복 그룹 뷰
    - Recommended: 추천 그리드 및 상세 보기
 
-## Android 빌드/실행
+## 실행 방법(Android 에뮬레이터 기준)
 
 의존성 설치
 ```bash
 flutter pub get
 ```
 
-디버그 빌드
+앱 실행
 ```bash
-flutter build apk --debug
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
+flutter run
 ```
 
-릴리스 빌드(축소 활성화)
+릴리스 빌드(선택)
 ```bash
 flutter build apk --release
 adb install -r build/app/outputs/flutter-apk/app-release.apk
@@ -90,11 +90,21 @@ ProGuard/축소 설정
   - Flutter 임베딩/플러그인/지연 로딩: `io.flutter.**`, `io.flutter.plugins.**`, `io.flutter.embedding.engine.deferredcomponents.**`
   - Play Core (Flutter 지연 컴포넌트 참조): `com.google.android.play.core.**`
 
-## 주의/팁
+## 데이터/모델 관리
 
-- 데이터 폴더는 앱에 번들됩니다. 실제 배포 시 용량 절감을 위해 `data/`를 비우거나 샘플 최소화 권장
-- 실제 기기 성능 최적화를 위해 NNAPI/GPU Delegate 적용 가능 (`tflite_flutter` 옵션 조정)
-- 패키지명/아이콘/스플래시는 `android/app/src/main` 및 `pubspec.yaml`에서 브랜드에 맞게 조정하세요
+- `data/`는 저장소에 유지되지만 사용자 사진은 `.gitignore`로 제외됩니다. 필요 시 여기에 샘플 이미지를 넣으면 앱에서 자동 로드합니다.
+- 앱이 사용하는 TFLite 모델은 `assets/models/`에 존재하며, `pubspec.yaml`에 등록되어 빌드에 포함됩니다.
+- 파이프라인/실험용 모델은 `python/tflite_models/`에서 관리합니다.
+
+## 문제 해결(트러블슈팅)
+
+- Conv2D 오류: `input->dims->size != 4 (1 != 4)`
+  - 조치: `flutter clean` → `flutter pub get` → 앱 삭제 후 `flutter run`
+  - 현 버전 코드는 인터프리터의 입력 Shape를 읽고 동적으로 `[1,H,W,3]`로 리사이즈하여 4D 입력을 보장합니다.
+- 모델 초기화 실패 시
+  - 앱은 자동으로 모의 임베딩 엔진으로 폴백합니다. 실제 모델 성능 확인을 원하면 `assets/models/`에 모델이 존재하는지 확인하세요.
+- 성능
+  - 일부 기기에서 NNAPI가 더 빠를 수 있음. 현재 인터프리터 생성 시 기본/NNAPI 경로를 순차 시도합니다.
 
 ## 추가 자료
 
