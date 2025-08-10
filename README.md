@@ -1,163 +1,109 @@
-# oneShot: Flutter 기반 온디바이스 여행 사진 큐레이션 시스템
+# oneShot: Flutter 기반 온디바이스 여행 사진 큐레이션 앱
 
-## 프로젝트 개요
+여행 사진 중복을 자동으로 묶고(클러스터링), 각 그룹에서 가장 좋은 사진을 추천하는 온디바이스 AI 앱입니다. 본 저장소는 Flutter 앱을 리포지터리 루트에서 직접 빌드/실행할 수 있도록 구성되어 있습니다.
 
-여행 사진에서 시각적으로 중복된 사진들을 자동으로 감지하고 최적의 사진만 선별하는 완전한 온디바이스 AI 시스템입니다.
+## 최근 작업 요약 (Android 중심)
 
-## 구현 완료 단계
+- 실서비스 파이프라인 전환: 모의 임베딩 → 실제 TFLite 추론으로 전환
+  - `lib/engine/tflite_embedding_runner.dart` 추가 (실제 TFLite 임베딩 러너)
+  - `lib/providers/photo_processing_provider.dart`에서 `TFLiteService` + `TFLiteEmbeddingRunner` 사용
+- 중복 그룹핑 및 랭킹 엔진 통합 유지
+  - 그룹핑: `lib/engine/grouping.dart` (배경/얼굴 시그니처 융합 점수)
+  - 랭킹: `lib/engine/ranking.dart` + `lib/engine/quality_metrics.dart`
+- Android 빌드 체인 정비
+  - 디버그/릴리스 APK 모두 빌드 완료
+  - 릴리스 축소(난독화/리소스 축소) 재활성화 및 안전 규칙 추가
+    - ProGuard: `android/app/proguard-rules.pro` (TFLite/Flutter/Play Core 보존 규칙)
+    - Gradle: `android/app/build.gradle.kts` 릴리스 빌드에 축소 설정 적용
 
-### ✅ Phase 1: Python 데스크톱 프로토타입
-- **MobileNetV3 기반 유사도 모델**: TFLite 호환 설계
-- **이미지 전처리 파이프라인**: 224x224 고정 크기, 정규화
-- **코사인 유사도 계산**: 메모리 효율적 구현
-- **그리디 클러스터링**: 빠른 중복 감지 알고리즘
+빌드 결과
+- 디버그 APK: `build/app/outputs/flutter-apk/app-debug.apk`
+- 릴리스 APK(축소 ON): `build/app/outputs/flutter-apk/app-release.apk`
 
-**성능 결과 (60장 여행 사진 테스트)**:
-- 처리 시간: 7.28초 (평균 121.3ms/이미지)
-- 중복 감지: 81개 중복 쌍 발견
-- 공간 절약: 60장 → 24장 (60% 절약)
+## 앱 아키텍처 개요
 
-### ✅ Phase 2: TensorFlow Lite 최적화
-성공적으로 3가지 양자화 모델 생성:
-
-| 모델 타입 | 크기 | 추론 속도 | 상태 |
-|-----------|------|-----------|------|
-| Dynamic | 3.60 MB | 6.6ms | ✅ 최적 |
-| Float16 | 6.65 MB | 9.7ms | ✅ 작동 |
-| Int8 | 3.80 MB | - | ❌ 호환성 이슈 |
-
-**권장**: Dynamic 양자화 모델 (크기/성능 균형 최적)
-
-### ✅ Phase 3: Flutter 앱 통합
-완전한 Flutter 앱 구현:
-
-#### 🏗️ 아키텍처
 ```
 lib/
-├── main.dart              # 앱 진입점, 권한 처리
-├── providers/             # 상태 관리 (Provider 패턴)
-├── services/              # TFLite 서비스, AI 추론
-├── models/               # 데이터 모델 (PhotoCluster)
-├── screens/              # UI 스크린들
-├── widgets/              # 재사용 가능한 위젯
-└── utils/                # 유틸리티 (유사도 계산)
+├── main.dart                        # 앱 엔트리/탭 네비게이션
+├── providers/
+│   └── photo_processing_provider.dart  # 상태/진행률/결과 관리
+├── engine/
+│   ├── embedding_runner.dart          # 임베딩 인터페이스(추상)
+│   ├── tflite_embedding_runner.dart   # 실제 TFLite 임베딩 러너
+│   ├── grouping.dart                  # 중복 점수 기반 클러스터링
+│   ├── face_models.dart               # 간이 얼굴 세트 시그니처
+│   ├── ranking.dart                   # 대표 사진 선별 로직
+│   ├── quality_metrics.dart           # 샤프니스/노출 등 품질 지표
+│   └── weights.dart                   # 가중치/임계값 설정
+├── services/
+│   ├── tflite_service.dart            # TFLite 인터프리터 로딩/추론
+│   └── asset_photo_service.dart       # `data/` 에셋 이미지 로딩
+├── models/
+│   └── photo_cluster.dart             # 결과/클러스터 모델(Asset 기반)
+├── screens/
+│   ├── home_screen.dart               # 진행/통계/CTA
+│   ├── clusters_screen.dart           # 클러스터 목록
+│   └── recommended_screen.dart        # 추천 사진 그리드/상세
+└── widgets/
+    ├── stats_card.dart                # 통계 카드
+    └── cluster_view.dart              # 클러스터 썸네일 리스트
 ```
 
-#### 🎯 주요 기능
-1. **갤러리 접근 권한** 자동 요청
-2. **실시간 진행률** 표시
-3. **클러스터 시각화** - 중복 그룹별 표시
-4. **추천 사진** - 각 클러스터에서 최적 선택
-5. **상세 통계** - 절약된 공간, 중복 수 등
+에셋/모델
+- 앱에 번들된 예제 이미지: `data/` (pubspec 등록)
+- TFLite 모델: `assets/models/similarity_model_dynamic.tflite`
 
-#### 📱 UI/UX
-- **홈 탭**: 전체 통계, 처리 버튼
-- **클러스터 탭**: 중복 그룹별 상세 보기
-- **추천 탭**: 큐레이션된 최종 사진들
+## 동작 흐름
 
-## 🚀 실행 방법
+1) `HomeScreen`에서 “사진 분석 시작” 클릭 → `PhotoProcessingProvider.processGalleryPhotos()` 호출
+2) `AssetPhotoService`가 `data/` 폴더의 이미지를 `AssetManifest.json` 또는 폴백 목록으로 로드
+3) `DuplicateGrouper`가 `TFLiteEmbeddingRunner` 임베딩 + `FaceEngineMock` 시그니처로 유사도 융합 점수 계산 후 클러스터링
+4) `Ranker`가 각 클러스터에서 품질 지표(샤프니스/노출 등)로 대표 사진 선정
+5) 결과는 탭 UI에 반영
+   - Home: 처리 통계/진행률/요약
+   - Clusters: 중복 그룹 뷰
+   - Recommended: 추천 그리드 및 상세 보기
 
-### 1. Python 프로토타입 테스트
+## Android 빌드/실행
+
+의존성 설치
 ```bash
-cd python
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 데이터 폴더의 사진들로 테스트
-python3 main.py --data_folder ../data --similarity_threshold 0.8
-```
-
-### 2. TFLite 모델 변환
-```bash
-cd python
-source venv/bin/activate
-python3 convert_to_tflite.py
-```
-
-### 3. Flutter 앱 실행
-```bash
-cd flutter_app
-
-# 의존성 설치
 flutter pub get
-
-# 앱 실행 (Android/iOS)
-flutter run
 ```
 
-## 📊 성능 지표
-
-### 모바일 최적화 목표 달성:
-- ✅ **모델 크기**: 3.60MB (목표: <50MB)
-- ✅ **추론 속도**: 6.6ms (목표: <50ms)
-- ✅ **메모리 사용**: 효율적 (배치 크기 1)
-- ✅ **배터리 소모**: 최소화 (온디바이스 처리)
-
-### 정확도:
-- **유사도 임계값**: 0.8 (80% 이상 유사시 중복 판정)
-- **클러스터링**: 그리디 알고리즘으로 빠른 처리
-- **거짓 양성**: 매우 낮음 (MobileNetV3 ImageNet 사전훈련)
-
-## 🛠️ 기술 스택
-
-### Backend (Python)
-- **TensorFlow 2.20**: 모델 개발
-- **MobileNetV3**: 경량 특징 추출
-- **NumPy**: 수치 계산
-- **Pillow**: 이미지 처리
-
-### Mobile (Flutter)
-- **tflite_flutter**: TFLite 통합
-- **photo_manager**: 갤러리 접근
-- **provider**: 상태 관리
-- **image**: 이미지 처리
-
-## 🔮 향후 개선 사항
-
-### 단기 (1-2주):
-- [ ] **GPU 가속**: NNAPI, Metal 지원
-- [ ] **배치 처리**: 메모리 허용 시 병렬 처리
-- [ ] **진행률 최적화**: 더 정확한 예상 시간
-
-### 중기 (1개월):
-- [ ] **클라우드 백업**: 추천 사진 자동 백업
-- [ ] **스마트 앨범**: 날짜/장소별 자동 분류
-- [ ] **사용자 피드백**: 잘못된 분류 수정 학습
-
-### 장기 (3개월):
-- [ ] **실시간 캡처**: 촬영 시점에 중복 방지
-- [ ] **고급 필터**: 얼굴, 풍경 등 콘텐츠별 분류
-- [ ] **공유 기능**: 큐레이션 결과 공유
-
-## 📁 프로젝트 구조
-
-```
-oneShot/
-├── README.md
-├── data/                    # 테스트 이미지 (60장)
-├── python/                  # Python 프로토타입
-│   ├── models/             # TFLite 호환 모델
-│   ├── preprocessing/      # 이미지 전처리
-│   ├── similarity/         # 유사도 계산
-│   ├── tflite_convert/     # TFLite 변환
-│   └── main.py            # 실행 스크립트
-├── tflite_models/          # 변환된 TFLite 모델들
-│   ├── similarity_model_dynamic.tflite  # 추천 모델
-│   ├── similarity_model_float16.tflite
-│   └── similarity_model_int8.tflite
-└── flutter_app/           # Flutter 모바일 앱
-    ├── lib/               # Dart 소스 코드
-    ├── assets/models/     # TFLite 모델 에셋
-    └── pubspec.yaml       # Flutter 의존성
+디버그 빌드
+```bash
+flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-## 🎯 핵심 성과
+릴리스 빌드(축소 활성화)
+```bash
+flutter build apk --release
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
 
-1. **완전한 온디바이스 처리**: 인터넷 연결 불필요
-2. **실용적 성능**: 60장 사진을 7초에 처리
-3. **높은 정확도**: 시각적으로 유사한 사진 정확히 감지
-4. **모바일 최적화**: 3.6MB 모델, 6.6ms 추론
-5. **사용자 친화적**: 직관적인 Flutter UI
+ProGuard/축소 설정
+- 규칙: `android/app/proguard-rules.pro`
+- 주요 보존 대상
+  - TFLite: `org.tensorflow.lite.**`, `org.tensorflow.lite.gpu.**`, `com.google.flatbuffers.**`
+  - Flutter 임베딩/플러그인/지연 로딩: `io.flutter.**`, `io.flutter.plugins.**`, `io.flutter.embedding.engine.deferredcomponents.**`
+  - Play Core (Flutter 지연 컴포넌트 참조): `com.google.android.play.core.**`
 
-이 시스템은 **실제 사용 가능한 수준**의 여행 사진 큐레이션 솔루션으로, 모바일 디바이스에서 완전히 작동하며 사용자의 프라이버시를 보장합니다.
+## 주의/팁
+
+- 데이터 폴더는 앱에 번들됩니다. 실제 배포 시 용량 절감을 위해 `data/`를 비우거나 샘플 최소화 권장
+- 실제 기기 성능 최적화를 위해 NNAPI/GPU Delegate 적용 가능 (`tflite_flutter` 옵션 조정)
+- 패키지명/아이콘/스플래시는 `android/app/src/main` 및 `pubspec.yaml`에서 브랜드에 맞게 조정하세요
+
+## 추가 자료
+
+- Flutter/Dart 린트: `analysis_options.yaml`
+- 환경 셋업: `FLUTTER_SETUP.md`, `SETUP.md`, `setup_flutter.sh`
+
+## 향후 개선 아이디어
+
+- NNAPI/GPU Delegate 자동 선택 및 성능 벤치마크
+- 리얼 얼굴 품질/눈뜨기 검출 모델 연동(현재는 프록시/상수)
+- 기기 갤러리 접근(`photo_manager`) 기반 실사진 처리 모드 추가(현재는 번들 에셋)
+- APK 사이즈 최적화(리소스/폰트/모델 분리 및 압축)

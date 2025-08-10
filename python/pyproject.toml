@@ -1,0 +1,39 @@
+[project]
+name = "one-shot-ai"
+version = "0.1.0"
+description = "DINOv2 -> TFLite export pipeline and local tests for oneShot"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [
+  { name = "oneShot" }
+]
+dependencies = [
+  "torch>=2.2.0",
+  "timm>=0.9.8",
+  "onnx>=1.15.0",
+  "onnxruntime>=1.17.0",
+  "onnx2tf==1.19.0",
+  "tf-keras>=2.16.0",
+  "tensorflow>=2.16.1",
+  "onnx-graphsurgeon>=0.3.26",
+  "psutil>=5.9.0",
+  "sng4onnx>=1.0.0",
+  "numpy>=1.24.0",
+  "pillow>=10.0.0",
+]
+
+[project.scripts]
+dinov2-export = "dinov2_export:main"
+verify-tflite = "verify_tflite:main"
+
+[tool.uv]
+index-url = "https://pypi.org/simple"
+
+[project.optional-dependencies]
+onnxsim = [
+  # CMake 3.30+ drops compatibility with projects declaring
+  # cmake_minimum_required lower than 3.5 (used by onnx submodules).
+  # Pin to <3.30 to avoid the policy error during build.
+  "cmake<3.30",
+  "onnxsim>=0.4.36",
+]

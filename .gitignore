@@ -711,9 +711,11 @@ fabric.properties
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -827,3 +829,87 @@ data/
 # 개발 중 생성되는 파일
 *.g.dart
 *.freezed.dart
+
+# =======================
+# Python
+# =======================
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+.python-version
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build / dist
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# =======================
+# PyTorch / Checkpoints
+# =======================
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# =======================
+# TFLite Models
+# =======================
+*.tflite
+
+# =======================
+# Flutter
+# =======================
+# Dart & Flutter build outputs
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+
+# Flutter specific
+pubspec.lock
+
+# =======================
+# Android
+# =======================
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+**/android/app/proguard-rules.pro
+
+# =======================
+# iOS
+# =======================
+**/ios/Pods/
+**/ios/Podfile.lock
+**/ios/build/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/project.xcworkspace/
+**/ios/Runner.xcodeproj/xcuserdata/
+
+# =======================
+# IDE / Editor settings
+# =======================
+.vscode/
+.idea/
+*.iml
+
+# =======================
+# Tests / Temp
+# =======================
+test/
+tmp/
+temp/
