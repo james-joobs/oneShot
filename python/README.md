@@ -37,13 +37,22 @@ The pipeline generates everything needed for Flutter/Android integration:
 - `pca_transform.dart` code for preprocessing
 - Configuration JSON files with metadata
 
-#### Manual Model Export
+#### Manual Model Export & Deployment
 ```bash
-# Export trained model to mobile formats
+# 1. Export trained model to mobile formats
 uv run export-tflite --checkpoint checkpoints/best_model.pth --output_dir ./mobile_models
 
-# Verify generated models
+# 2. Verify generated models (auto-detects NHWC/NCHW format)
 uv run verify-tflite --model mobile_models/model_float32.tflite
+
+# 3. Deploy to Flutter app (interactive selection)
+uv run deploy-models
+
+# 4. Auto-deploy specific model
+uv run deploy-models --auto float32
+
+# 5. List available models
+uv run deploy-models --list
 ```
 
 ## 🏗️ Project Architecture
@@ -281,17 +290,34 @@ uv run extract-embeddings --help
 uv run export-tflite --help
 ```
 
-### Model Export Options
+### Mobile Deployment Workflow
 ```bash
-# Export with different quantization levels
+# Complete mobile deployment pipeline
+# 1. Train model
+uv run pipeline --image_dir ./photos --mode full
+
+# 2. Export to TFLite (generates NHWC-compatible models)
 uv run export-tflite --checkpoint checkpoints/best_model.pth --output_dir ./mobile_models
 
-# Generated files:
-# ├── model_float32.tflite   (~595KB) - Highest accuracy
-# ├── model_float16.tflite   (~595KB) - Balanced performance  
+# 3. Deploy to Flutter app 
+uv run deploy-models --auto float32
+
+# Generated files in mobile_models/:
+# ├── model_float32.tflite   (~595KB) - Highest accuracy  
+# ├── model_float16.tflite   (~595KB) - Balanced performance
 # ├── model_dynamic.tflite   (~595KB) - Dynamic quantization
 # └── export_metadata.json           - Export information
+
+# Deployed to Flutter app:
+# └── assets/models/dinov2_trained_float32.tflite
 ```
+
+### Flutter Integration
+The deployed model automatically works with the existing Flutter app:
+- **Input Format**: NHWC `[1, 224, 224, 3]` (Flutter compatible)
+- **Output Format**: `[1, 128]` normalized embeddings  
+- **Model Size**: ~595KB (140x smaller than original DINOv2)
+- **Performance**: Optimized for mobile inference
 
 ### Adding New Features
 1. Add new step to `pipeline.py`

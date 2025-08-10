@@ -1,0 +1,12 @@
+{
+  "deployed_at": "2025-08-10T14:47:46.782124",
+  "source_model": {
+    "name": "New Float32 Model",
+    "path": "mobile_models/model_float32.tflite",
+    "size_mb": 0.5680313110351562,
+    "type": "newly_trained",
+    "description": "Recently trained model with float32 precision"
+  },
+  "target_file": "../assets/models/dinov2_trained_float32.tflite",
+  "deployment_script": "deploy_models.py"
+}

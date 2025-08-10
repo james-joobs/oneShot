@@ -68,6 +68,7 @@ pipeline = "training.pipeline:main"
 project-manager = "training.project_manager:main"
 dataset-validator = "training.utils:main"
 test-install = "test_installation:main"
+deploy-models = "deploy_models:main"
 
 [tool.uv]
 index-url = "https://pypi.org/simple"
