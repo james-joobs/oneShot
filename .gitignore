@@ -913,3 +913,5 @@ pubspec.lock
 test/
 tmp/
 temp/
+
+*.txt
