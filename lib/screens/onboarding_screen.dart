@@ -10,9 +10,9 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   int _currentPage = 0;
-  
+
   final List<OnboardingPage> _pages = [
     OnboardingPage(
       title: '여행 사진을\n스마트하게 정리하세요',
@@ -102,9 +102,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // 다음/시작하기 버튼
                 SizedBox(
                   width: double.infinity,
@@ -169,9 +169,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: Colors.white,
             ),
           ),
-          
+
           const SizedBox(height: 48),
-          
+
           // 제목
           Text(
             page.title,
@@ -183,9 +183,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               height: 1.2,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // 설명
           Text(
             page.description,
@@ -219,13 +219,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _requestPermissionsAndStart() async {
     // Android/iOS 버전에 맞는 권한 요청
     PermissionStatus status;
-    
+
     // Android 13 이상은 photos 권한, 그 이하는 storage 권한
     if (Theme.of(context).platform == TargetPlatform.android) {
       final info = await Permission.photos.status;
       if (!info.isGranted) {
         status = await Permission.photos.request();
-        
+
         // photos 권한이 지원되지 않으면 storage 권한 시도
         if (status.isPermanentlyDenied || status.isDenied) {
           status = await Permission.storage.request();
@@ -237,7 +237,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // iOS
       status = await Permission.photos.request();
     }
-    
+
     if (status.isGranted || status.isLimited) {
       _goToMain();
     } else if (status.isDenied) {

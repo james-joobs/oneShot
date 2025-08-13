@@ -11,7 +11,7 @@ class TFLiteService {
   // Try multiple model paths for compatibility
   static const List<String> _modelPaths = [
     'assets/models/dinov2_vits14_embed.tflite',
-    'assets/models/dinov2_vits14_embed_dynamic.tflite', 
+    'assets/models/dinov2_vits14_embed_dynamic.tflite',
     'assets/models/similarity_model_dynamic.tflite',
     'assets/models/dinov2_trained_float32.tflite', // Keep as last fallback
   ];
@@ -23,7 +23,6 @@ class TFLiteService {
   bool _isInitialized = false;
   int _inputH = _defaultInputSize;
   int _inputW = _defaultInputSize;
-  int _inputC = 3;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -32,7 +31,7 @@ class TFLiteService {
     Exception? lastError;
     for (final modelPath in _modelPaths) {
       debugPrint('TFLite: Trying model $modelPath');
-      
+
       // Try multiple interpreter configurations for each model
       final attempts = <InterpreterOptions Function()>[
         // Default fast path
@@ -43,46 +42,45 @@ class TFLiteService {
         () => InterpreterOptions()..useNnApiForAndroid = true,
       ];
 
-        for (final buildOptions in attempts) {
-          try {
-            final options = buildOptions();
-            _interpreter =
-                await Interpreter.fromAsset(modelPath, options: options);
-            
-            // Determine input/output shapes and resize if needed
-            var inShape = _interpreter!.getInputTensor(0).shape;
-            // Expect NHWC. Some models ship with dynamic dims (-1) or 0.
-            if (inShape.length == 4 &&
-                (inShape[1] == -1 ||
-                    inShape[2] == -1 ||
-                    inShape[1] == 0 ||
-                    inShape[2] == 0)) {
-              // Use sensible default
-              inShape = [1, _defaultInputSize, _defaultInputSize, 3];
-              _interpreter!.resizeInputTensor(0, inShape);
-              _interpreter!.allocateTensors();
-            }
+      for (final buildOptions in attempts) {
+        try {
+          final options = buildOptions();
+          _interpreter =
+              await Interpreter.fromAsset(modelPath, options: options);
 
-            if (inShape.length != 4) {
-              throw Exception(
-                  'Unexpected model input rank ${inShape.length}, expected 4D NHWC');
-            }
-            _inputH = inShape[1];
-            _inputW = inShape[2];
-            _inputC = inShape[3];
-
-            // Output shape for logging
-            final outShape = _interpreter!.getOutputTensor(0).shape;
-            _isInitialized = true;
-            debugPrint(
-                'TFLite: Successfully loaded $modelPath. Input shape: $inShape, Output shape: $outShape');
-            return;
-          } catch (e) {
-            debugPrint('TFLite: Failed to load $modelPath with options: $e');
-            lastError = Exception(e.toString());
+          // Determine input/output shapes and resize if needed
+          var inShape = _interpreter!.getInputTensor(0).shape;
+          // Expect NHWC. Some models ship with dynamic dims (-1) or 0.
+          if (inShape.length == 4 &&
+              (inShape[1] == -1 ||
+                  inShape[2] == -1 ||
+                  inShape[1] == 0 ||
+                  inShape[2] == 0)) {
+            // Use sensible default
+            inShape = [1, _defaultInputSize, _defaultInputSize, 3];
+            _interpreter!.resizeInputTensor(0, inShape);
+            _interpreter!.allocateTensors();
           }
+
+          if (inShape.length != 4) {
+            throw Exception(
+                'Unexpected model input rank ${inShape.length}, expected 4D NHWC');
+          }
+          _inputH = inShape[1];
+          _inputW = inShape[2];
+
+          // Output shape for logging
+          final outShape = _interpreter!.getOutputTensor(0).shape;
+          _isInitialized = true;
+          debugPrint(
+              'TFLite: Successfully loaded $modelPath. Input shape: $inShape, Output shape: $outShape');
+          return;
+        } catch (e) {
+          debugPrint('TFLite: Failed to load $modelPath with options: $e');
+          lastError = Exception(e.toString());
         }
       }
+    }
 
     throw Exception(
         'Failed to load TFLite model: ${lastError ?? 'unknown error'}');
@@ -260,7 +258,6 @@ class TFLiteService {
   bool areSimilar(Float32List features1, Float32List features2) {
     return calculateSimilarity(features1, features2) >= _similarityThreshold;
   }
-
 
   void dispose() {
     _interpreter?.close();

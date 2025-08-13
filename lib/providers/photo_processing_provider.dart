@@ -34,7 +34,7 @@ class PhotoProcessingProvider extends ChangeNotifier {
   String get statusMessage => _statusMessage;
   String? get errorMessage => _errorMessage;
   bool get hasResult => _result != null;
-  
+
   // 새로운 통계 속성들
   int get processedPhotos => _result?.totalPhotos ?? 0;
   int get savedSpaceMB => (_result?.duplicateCount ?? 0) * 2; // 가정: 사진당 평균 2MB
@@ -172,7 +172,8 @@ class PhotoProcessingProvider extends ChangeNotifier {
   }
 
   /// 갤러리에서 선택한 사진들을 처리
-  Future<void> processGallerySelectedPhotos(List<AssetEntity> selectedPhotos) async {
+  Future<void> processGallerySelectedPhotos(
+      List<AssetEntity> selectedPhotos) async {
     if (_isProcessing || selectedPhotos.isEmpty) return;
 
     _isProcessing = true;
@@ -227,7 +228,7 @@ class PhotoProcessingProvider extends ChangeNotifier {
 
       final rebuiltClusters = <AssetPhotoCluster>[];
       final recommended = <AssetPhoto>[];
-      
+
       for (final c in clusters) {
         final best = await _ranker.pickBest(c.photos);
         recommended.add(best.photo);
@@ -244,7 +245,7 @@ class PhotoProcessingProvider extends ChangeNotifier {
       for (final c in rebuiltClusters) {
         duplicateCount += c.photos.length - 1;
       }
-      
+
       final elapsed = DateTime.now().difference(start).inMilliseconds / 1000.0;
       _result = AssetProcessingResult(
         clusters: rebuiltClusters,
@@ -256,8 +257,9 @@ class PhotoProcessingProvider extends ChangeNotifier {
 
       _statusMessage = '큐레이션 완료!';
       _progress = 1.0;
-      
-      debugPrint('큐레이션 완료: ${photos.length}장 → ${recommended.length}장 (${duplicateCount}장 중복 제거)');
+
+      debugPrint(
+          '큐레이션 완료: ${photos.length}장 → ${recommended.length}장 ($duplicateCount장 중복 제거)');
     } catch (e) {
       _errorMessage = '처리 중 오류: $e';
       _statusMessage = '오류 발생';

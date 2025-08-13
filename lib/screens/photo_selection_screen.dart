@@ -4,7 +4,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/photo_processing_provider.dart';
-import '../services/asset_photo_service.dart';
 
 class PhotoSelectionScreen extends StatefulWidget {
   const PhotoSelectionScreen({super.key});
@@ -21,7 +20,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
   AssetPathEntity? _currentAlbum;
   bool _isLoading = true;
   bool _isSelectionMode = false;
-  
+
   late AnimationController _selectionAnimationController;
   late AnimationController _fabAnimationController;
 
@@ -72,17 +71,17 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
 
   Future<void> _loadAlbums() async {
     setState(() => _isLoading = true);
-    
+
     final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       type: RequestType.image,
       onlyAll: false,
     );
-    
+
     setState(() {
       _albums = albums;
       _isLoading = false;
     });
-    
+
     if (albums.isNotEmpty) {
       await _loadPhotosFromAlbum(albums.first);
     }
@@ -90,12 +89,12 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
 
   Future<void> _loadPhotosFromAlbum(AssetPathEntity album) async {
     setState(() => _isLoading = true);
-    
+
     final List<AssetEntity> photos = await album.getAssetListRange(
       start: 0,
       end: 1000, // 최대 1000장
     );
-    
+
     setState(() {
       _currentAlbum = album;
       _currentPhotos = photos;
@@ -247,9 +246,12 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
                 const SizedBox(width: 8),
               ],
               _buildActionButton(
-                icon: _isSelectionMode ? Icons.close : Icons.check_circle_rounded,
+                icon:
+                    _isSelectionMode ? Icons.close : Icons.check_circle_rounded,
                 onTap: _toggleSelectionMode,
-                color: _isSelectionMode ? const Color(0xFFFF6B6B) : const Color(0xFF6C63FF),
+                color: _isSelectionMode
+                    ? const Color(0xFFFF6B6B)
+                    : const Color(0xFF6C63FF),
               ),
             ],
           ),
@@ -309,7 +311,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
 
   Widget _buildAlbumSelector() {
     if (_albums.isEmpty) return const SizedBox();
-    
+
     return Container(
       height: 60,
       margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -319,7 +321,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
         itemBuilder: (context, index) {
           final album = _albums[index];
           final isSelected = _currentAlbum?.id == album.id;
-          
+
           return GestureDetector(
             onTap: () => _loadPhotosFromAlbum(album),
             child: AnimatedContainer(
@@ -330,15 +332,19 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
                 color: isSelected ? const Color(0xFF6C63FF) : Colors.white,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF6C63FF) : Colors.grey.shade300,
+                  color: isSelected
+                      ? const Color(0xFF6C63FF)
+                      : Colors.grey.shade300,
                 ),
-                boxShadow: isSelected ? [
-                  BoxShadow(
-                    color: const Color(0xFF6C63FF).withAlpha(60),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ] : null,
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF6C63FF).withAlpha(60),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -353,7 +359,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
                     album.name,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey[700],
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
                       fontSize: 14,
                     ),
                   ),
@@ -379,7 +386,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
         ),
       );
     }
-    
+
     if (_currentPhotos.isEmpty) {
       return const Center(
         child: Column(
@@ -406,7 +413,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
         itemBuilder: (context, index) {
           final photo = _currentPhotos[index];
           final isSelected = _selectedPhotos.contains(photo);
-          
+
           return GestureDetector(
             onTap: () {
               if (_isSelectionMode) {
@@ -420,7 +427,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF6C63FF) : Colors.transparent,
+                  color:
+                      isSelected ? const Color(0xFF6C63FF) : Colors.transparent,
                   width: 3,
                 ),
               ),
@@ -444,10 +452,14 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF6C63FF) : Colors.white.withAlpha(200),
+                          color: isSelected
+                              ? const Color(0xFF6C63FF)
+                              : Colors.white.withAlpha(200),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF6C63FF) : Colors.grey,
+                            color: isSelected
+                                ? const Color(0xFF6C63FF)
+                                : Colors.grey,
                             width: 2,
                           ),
                         ),
@@ -471,7 +483,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
 
   Widget _buildFloatingActionButton() {
     if (_selectedPhotos.isEmpty) return const SizedBox();
-    
+
     return AnimatedBuilder(
       animation: _fabAnimationController,
       builder: (context, child) {
@@ -480,15 +492,16 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
           child: FloatingActionButton.extended(
             onPressed: () async {
               // 큐레이션 시작
-              final provider = Provider.of<PhotoProcessingProvider>(context, listen: false);
-              
+              final provider =
+                  Provider.of<PhotoProcessingProvider>(context, listen: false);
+
               // 선택한 사진들로 큐레이션 시작
               await provider.processGallerySelectedPhotos(_selectedPhotos);
-              
+
               if (context.mounted) {
                 // 큐레이션 화면으로 이동
                 Navigator.pushNamed(context, '/curation');
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('${_selectedPhotos.length}장의 사진 큐레이션 시작!'),
@@ -499,7 +512,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen>
                     ),
                   ),
                 );
-                
+
                 // 선택 모드 종료
                 setState(() {
                   _isSelectionMode = false;

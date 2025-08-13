@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -20,11 +19,11 @@ class CurationScreen extends StatelessWidget {
             if (provider.isProcessing) {
               return _buildProcessingView(provider);
             }
-            
+
             if (provider.hasResult) {
               return _buildResultView(provider);
             }
-            
+
             return _buildEmptyView();
           },
         ),
@@ -67,9 +66,9 @@ class CurationScreen extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           const Text(
             'AI가 사진을 분석하고 있어요',
             style: TextStyle(
@@ -79,9 +78,9 @@ class CurationScreen extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Text(
             provider.statusMessage,
             style: TextStyle(
@@ -90,9 +89,9 @@ class CurationScreen extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // 진행률 표시
           Container(
             width: double.infinity,
@@ -114,9 +113,9 @@ class CurationScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Text(
             '${(provider.progress * 100).toStringAsFixed(0)}%',
             style: const TextStyle(
@@ -132,7 +131,7 @@ class CurationScreen extends StatelessWidget {
 
   Widget _buildResultView(PhotoProcessingProvider provider) {
     final result = provider.result!;
-    
+
     return CustomScrollView(
       slivers: [
         // 헤더
@@ -184,9 +183,9 @@ class CurationScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // 결과 통계
                 Row(
                   children: [
@@ -222,7 +221,7 @@ class CurationScreen extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // 추천 사진 그리드
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -242,7 +241,7 @@ class CurationScreen extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // 앨범 저장 액션 버튼
         SliverToBoxAdapter(
           child: Builder(
@@ -253,7 +252,8 @@ class CurationScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _saveAsAlbum(context, result.recommendedPhotos),
+                      onPressed: () =>
+                          _saveAsAlbum(context, result.recommendedPhotos),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6C63FF),
                         foregroundColor: Colors.white,
@@ -273,14 +273,13 @@ class CurationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
                   const SizedBox(height: 16),
-                  
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => _sharePhotos(context, result.recommendedPhotos),
+                          onPressed: () =>
+                              _sharePhotos(context, result.recommendedPhotos),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF6C63FF),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -296,7 +295,8 @@ class CurationScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => _downloadPhotos(context, result.recommendedPhotos),
+                          onPressed: () => _downloadPhotos(
+                              context, result.recommendedPhotos),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF6C63FF),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -411,7 +411,7 @@ class CurationScreen extends StatelessWidget {
                 );
               },
             ),
-            
+
             // 그라데이션 오버레이
             Container(
               decoration: BoxDecoration(
@@ -425,7 +425,7 @@ class CurationScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // 하단 정보
             Positioned(
               bottom: 12,
@@ -434,7 +434,8 @@ class CurationScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(200),
                       borderRadius: BorderRadius.circular(12),
@@ -479,9 +480,7 @@ class CurationScreen extends StatelessWidget {
             size: 80,
             color: Colors.grey,
           ),
-          
           SizedBox(height: 24),
-          
           Text(
             '큐레이션을 시작해보세요',
             style: TextStyle(
@@ -491,9 +490,7 @@ class CurationScreen extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          
           SizedBox(height: 12),
-          
           Text(
             '사진 선택 탭에서 분석할 사진들을 선택하고\nAI 큐레이션을 시작해보세요',
             style: TextStyle(
@@ -507,7 +504,7 @@ class CurationScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 앨범으로 저장
   void _saveAsAlbum(BuildContext context, List<dynamic> photos) {
     showDialog(
@@ -519,7 +516,7 @@ class CurationScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 사진 공유
   void _sharePhotos(BuildContext context, List<dynamic> photos) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -529,7 +526,7 @@ class CurationScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 사진 다운로드
   void _downloadPhotos(BuildContext context, List<dynamic> photos) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -15,14 +15,14 @@ class GalleryPhotoService {
         const ThumbnailSize(400, 400),
         quality: 95,
       );
-      
+
       if (thumbnailData == null) {
         throw Exception('Failed to load thumbnail for ${entity.id}');
       }
 
       // 원본 데이터 가져오기 (필요시)
       final Uint8List? originData = await entity.originBytes;
-      
+
       return GalleryAssetPhoto(
         id: entity.id,
         name: entity.title ?? 'Photo_${entity.id}',
@@ -46,12 +46,12 @@ class GalleryPhotoService {
     Function(int current, int total)? onProgress,
   }) async {
     final List<AssetPhoto> photos = [];
-    
+
     for (int i = 0; i < entities.length; i++) {
       try {
         final photo = await convertToAssetPhoto(entities[i]);
         photos.add(photo);
-        
+
         if (onProgress != null) {
           onProgress(i + 1, entities.length);
         }
@@ -60,7 +60,7 @@ class GalleryPhotoService {
         // 실패한 사진은 건너뛰기
       }
     }
-    
+
     return photos;
   }
 
@@ -69,12 +69,12 @@ class GalleryPhotoService {
     final tempDir = await getTemporaryDirectory();
     final tempPath = '${tempDir.path}/temp_${entity.id}.jpg';
     final file = File(tempPath);
-    
+
     final data = await entity.originBytes;
     if (data != null) {
       await file.writeAsBytes(data);
     }
-    
+
     return file;
   }
 }
@@ -90,8 +90,8 @@ class GalleryAssetPhoto extends AssetPhoto {
   final AssetEntity entity;
 
   GalleryAssetPhoto({
-    required String id,
-    required String name,
+    required super.id,
+    required super.name,
     required Uint8List thumbnailData,
     required Uint8List originData,
     required this.width,
@@ -99,13 +99,11 @@ class GalleryAssetPhoto extends AssetPhoto {
     this.createDateTime,
     this.modifiedDateTime,
     required this.entity,
-  }) : _thumbnailData = thumbnailData,
-       _originData = originData,
-       super(
-         path: 'gallery://${entity.id}',
-         name: name,
-         id: id,
-       );
+  })  : _thumbnailData = thumbnailData,
+        _originData = originData,
+        super(
+          path: 'gallery://${entity.id}',
+        );
 
   @override
   Future<Uint8List> get thumbnailData async => _thumbnailData;
@@ -115,19 +113,19 @@ class GalleryAssetPhoto extends AssetPhoto {
 
   @override
   String toString() => 'GalleryAssetPhoto($name)';
-  
+
   /// 메타데이터 가져오기
   Map<String, dynamic> get metadata => {
-    'width': width,
-    'height': height,
-    'created': createDateTime?.toIso8601String(),
-    'modified': modifiedDateTime?.toIso8601String(),
-    'size': _originData.length,
-  };
-  
+        'width': width,
+        'height': height,
+        'created': createDateTime?.toIso8601String(),
+        'modified': modifiedDateTime?.toIso8601String(),
+        'size': _originData.length,
+      };
+
   /// 파일 크기 (MB)
   double get sizeInMB => _originData.length / (1024 * 1024);
-  
+
   /// 이미지 비율
   double get aspectRatio => width / height;
 }
