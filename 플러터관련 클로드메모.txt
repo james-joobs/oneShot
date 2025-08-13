@@ -1,0 +1,78 @@
+
+[one_shot 위치에서 한 명령]
+지금은 flutter와 tensorflow를 이용한 프로젝트 코드를 구성한건데,
+
+Ai 온디바이스 추론 부분은 우선 로컬에서 파이썬으로 테스트하려고 만들었고,
+앱으로 포팅해서 지금 프로젝트의 목표와 같이 앱을 만들고 싶어. (온디바이스도 포함)
+
+현재 지금 이 프로젝트에 맞는 매우 걸출한 UI를 만들고 싶은데,
+
+우선 안드로이드 모바일로 만들고 싶어.
+
+지금 이 프로젝트의 코드를 보고 잘못된 부분 불필요한 부분은 없는지 검토해보고,
+추가, 수정, 삭제가 필요하다면 진행하면 좋을거 같아.
+
+자 이 멋진 아이디어의 앱을 너가 멋지게 개선해서 만들어줘.
+
+만들고 나서 내가 어떻게 이 앱을 테스트하고 실행할지 커맨트로도 알려줘
+
+
+[현재 명령]
+내가 모르고 지금 위치해 있는 oneShot 폴더에서 해야할 걸 one_shot 폴더에 위와같은 명령을 내려버렸어.
+
+본 취지는 현재 위치인 oneShot이 맞고 현재 가장 최신으로 구현된 부분이 one_shot 내부에 있을텐데,
+
+위의 내가 명령한 본 취지에 따라서 코드를 옮기거나 새로 맞게 작성하거나 너가 매우 똑똑하게 적절하게 진행해줘.
+
+------------------------------------------------------------------------
+
+이 프로젝트에 보면 "사진 분석 시작" 이라는 버튼을 누르면
+
+"사진을 찾을 수 없습니다"라고 에러가 뜨는데,
+
+아무래도 내가 모바일 앱 개발을 잘 모르다니 보니 착각한거일수도 있는데,
+
+에뮬레이터에서 사진 접근 권한은 앱 자체 내에서 진행되는 거 같아.
+
+현재 내가 의도한 건 지금 프로젝트에 있는 ./data 폴더내에 있는 사진들을 불러오는 거였는데 말이야.(서버개발처럼) 
+
+
+지금 내가 의도한건 서버 개발처럼 로컬에 있는 이미지의 폴더의 가져오는것처럼 되어 있는데
+
+모바일 앱 개발에 맞게 제안해주고 지금 나는 에러를 고쳐줘
+
+------------------------------------------------------------------------
+
+"사진 분석 시작" 버튼 클릭 하면,
+아래와 같은 에러가 나는데 확인 좀 해줘
+
+I/flutter ( 5875): Failed to process photo KakaoTalk_Photo_2025-08-04-22-04-24 030.jpeg: Exception: TFLite service not initialized
+
+
+------------------------------------------------------------------------
+flutter run
+
+을 하면 아래와 같은 에러가 발생해
+
+
+Launching lib/main.dart on sdk gphone64 arm64 in debug mode...
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file '/Users/jamesjoo/Documents/github/oneShot/android/build.gradle.kts' line: 16
+
+* What went wrong:
+A problem occurred configuring project ':app'.
+> com.android.builder.errors.EvalIssueException: [CXX1101] NDK at /Users/jamesjoo/Library/Android/sdk/ndk/27.0.12077973 did not have a source.properties file
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2s
+Running Gradle task 'assembleDebug'...                           2,674ms
+Error: Gradle task assembleDebug failed with exit code 1
+
